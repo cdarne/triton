@@ -59,7 +59,7 @@ describe Triton::Messenger do
   it "should not unregister unknown listeners" do
     ok = false
     Triton::Messenger.on(:test) { ok = true }
-    Triton::Messenger.remove_listener(:test, Triton::Messenger::Event.new(:test, nil))
+    Triton::Messenger.remove_listener(:test, Triton::Messenger::Listener.new(:test, nil))
     Triton::Messenger.emit(:test)
     ok.must_equal true
   end
@@ -113,43 +113,43 @@ describe Triton::Messenger do
 end
 
 
-describe Triton::Messenger::Event do
+describe Triton::Messenger::Listener do
 
   it "should default the once instance variable to false" do
-    event = Triton::Messenger::Event.new(:test, nil)
+    event = Triton::Messenger::Listener.new(:test, nil)
     event.once.must_equal false
   end
 
   it "calls the provided callback" do
     called = false
     cb = lambda { |s| called = true }
-    event = Triton::Messenger::Event.new(:test, cb)
+    event = Triton::Messenger::Listener.new(:test, cb)
     event.fire
     called.must_equal true
   end
 
   it "unregisters itself once the event fired" do
-    event = Triton::Messenger::Event.new(:test, lambda { |s| }, true)
+    event = Triton::Messenger::Listener.new(:test, lambda { |s| }, true)
     Triton::Messenger.expects(:remove_listener).with(:test, event)
     event.fire
   end
 end
 
-describe Triton::Messenger::Emitter do
+describe Triton::Messenger::Emittable do
 
   it "should emit a signal on this name" do
-    klass = Class.new { include Triton::Messenger::Emitter }
+    klass = Class.new { include Triton::Messenger::Emittable }
     instance = klass.new
     Triton::Messenger.expects(:emit).with(:test, instance, :arg)
     instance.emit(:test, :arg)
   end
 end
 
-describe Triton::Messenger::Listener do
+describe Triton::Messenger::Listenable do
 
   before :each do
     Triton::Messenger.remove_all_listeners
-    klass = Class.new { include Triton::Messenger::Listener }
+    klass = Class.new { include Triton::Messenger::Listenable }
     @instance = klass.new
   end
 

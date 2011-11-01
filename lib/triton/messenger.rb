@@ -4,6 +4,7 @@ module Triton
   # == Example
   #
   #     require 'triton'
+  #
   #     Triton::Messenger.on(:alert) { puts "alert!" }
   #     Triton::Messenger.emit(:alert)
   #                         # -> alert!
@@ -16,17 +17,17 @@ module Triton
 
     # Register the given block to be called when the events of type +type+ will be emitted.
     # if +once+, the block will be called once
-    def add_listener(type, once=false, &listener)
+    def add_listener(type, once=false, &callback)
       listeners[type] ||= []
-      listeners[type] << Event.new(type, listener, once)
-      emit(:new_listener, self, type, once, listener)
+      listeners[type] << Listener.new(type, callback, once)
+      emit(:new_listener, self, type, once, callback)
     end
 
     alias :on :add_listener
 
     # Register the given block to be called only once when the events of type +type+ will be emitted.
-    def once(type, &listener)
-      add_listener(type, true, &listener)
+    def once(type, &callback)
+      add_listener(type, true, &callback)
     end
 
     # Unregister the given block. It won't be call then went an event is emitted.
@@ -55,14 +56,14 @@ module Triton
     end
 
     # Mixin that add shortcuts to emit events
-    module Emitter
+    module Emittable
       def emit(type, *args)
         Triton::Messenger.emit(type, self, *args)
       end
     end
 
     # Mixin that add shortcuts to emit events
-    module Listener
+    module Listenable
       def add_listener(type, once=false, &listener)
         Triton::Messenger.add_listener(type, once, &listener)
       end
@@ -74,20 +75,20 @@ module Triton
       end
     end
 
-    # The Event class helps managing event triggering.
+    # The Listener class helps managing event triggering.
     # It may not be used as its own.
-    class Event
-      attr_accessor :type, :listener, :once
+    class Listener
+      attr_accessor :type, :callback, :once
 
-      def initialize(type, listener, once=false)
+      def initialize(type, callback, once=false)
         @type = type
-        @listener = listener
+        @callback = callback
         @once = once
       end
 
       # Call the event listener passing through the +sender+ and the additional args
       def fire(sender=nil, *args)
-        @listener.call(sender, *args)
+        @callback.call(sender, *args)
 
         if @once
           Messenger::remove_listener(@type, self)
