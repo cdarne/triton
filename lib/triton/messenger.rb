@@ -18,9 +18,11 @@ module Triton
     # Register the given block to be called when the events of type +type+ will be emitted.
     # if +once+, the block will be called once
     def add_listener(type, once=false, &callback)
+      listener = Listener.new(type, callback, once)
       listeners[type] ||= []
-      listeners[type] << Listener.new(type, callback, once)
+      listeners[type] << listener
       emit(:new_listener, self, type, once, callback)
+      listener
     end
 
     alias :on :add_listener

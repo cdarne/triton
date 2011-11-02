@@ -41,17 +41,17 @@ describe Triton::Messenger do
 
   it "unregisters listeners" do
     ok = false
-    Triton::Messenger.on(:test) { fail "it should not have been called" }
+    listener = Triton::Messenger.on(:test) { fail "it should not have been called" }
     Triton::Messenger.on(:test) { ok = true }
-    Triton::Messenger.remove_listener(:test, Triton::Messenger.listeners[:test].first)
+    Triton::Messenger.remove_listener(:test, listener)
     Triton::Messenger.emit(:test)
     ok.must_equal true
   end
 
   it "should not unregister listeners of unknown type" do
     ok = false
-    Triton::Messenger.on(:test) { ok = true }
-    Triton::Messenger.remove_listener(:unknown, Triton::Messenger.listeners[:test].first)
+    listener = Triton::Messenger.on(:test) { ok = true }
+    Triton::Messenger.remove_listener(:unknown, listener)
     Triton::Messenger.emit(:test)
     ok.must_equal true
   end
