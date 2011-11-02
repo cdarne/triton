@@ -33,7 +33,8 @@ module Triton
     end
 
     # Unregister the given block. It won't be call then went an event is emitted.
-    def remove_listener(type, listener)
+    def remove_listener(listener)
+      type = listener.type
       if listeners.has_key? type
         listeners[type].delete(listener)
         listeners.delete(type) if listeners[type].empty?
@@ -93,7 +94,7 @@ module Triton
         @callback.call(sender, *args)
 
         if @once
-          Messenger::remove_listener(@type, self)
+          Messenger::remove_listener(self)
         end
       end
     end

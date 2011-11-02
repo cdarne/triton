@@ -43,15 +43,7 @@ describe Triton::Messenger do
     ok = false
     listener = Triton::Messenger.on(:test) { fail "it should not have been called" }
     Triton::Messenger.on(:test) { ok = true }
-    Triton::Messenger.remove_listener(:test, listener)
-    Triton::Messenger.emit(:test)
-    ok.must_equal true
-  end
-
-  it "should not unregister listeners of unknown type" do
-    ok = false
-    listener = Triton::Messenger.on(:test) { ok = true }
-    Triton::Messenger.remove_listener(:unknown, listener)
+    Triton::Messenger.remove_listener(listener)
     Triton::Messenger.emit(:test)
     ok.must_equal true
   end
@@ -59,7 +51,7 @@ describe Triton::Messenger do
   it "should not unregister unknown listeners" do
     ok = false
     Triton::Messenger.on(:test) { ok = true }
-    Triton::Messenger.remove_listener(:test, Triton::Messenger::Listener.new(:test, nil))
+    Triton::Messenger.remove_listener(Triton::Messenger::Listener.new(:test, nil))
     Triton::Messenger.emit(:test)
     ok.must_equal true
   end
@@ -129,9 +121,9 @@ describe Triton::Messenger::Listener do
   end
 
   it "unregisters itself once the event fired" do
-    event = Triton::Messenger::Listener.new(:test, lambda { |s| }, true)
-    Triton::Messenger.expects(:remove_listener).with(:test, event)
-    event.fire
+    listener = Triton::Messenger::Listener.new(:test, lambda { |s| }, true)
+    Triton::Messenger.expects(:remove_listener).with(listener)
+    listener.fire
   end
 end
 
